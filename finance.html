@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personal Finance Dashboard</title>
+
+<style>
+  body{font-family:Arial;background:#f4f6fb;margin:0}
+  .container{max-width:1000px;margin:auto;padding:20px}
+  h1{margin-bottom:5px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .value{font-size:22px;font-weight:bold}
+  .panel{background:#fff;margin-top:16px;padding:16px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  input{padding:10px;border-radius:10px;border:1px solid #ccc}
+  button{padding:10px;border-radius:10px;border:none;background:black;color:white;cursor:pointer}
+  table{width:100%;margin-top:10px;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid #ddd;font-size:14px}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Personal Finance Dashboard</h1>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card">
+      <p>Total Balance</p>
+      <p id="balance" class="value">$0</p>
+    </div>
+    <div class="card">
+      <p>Total Income</p>
+      <p id="income" class="value">$0</p>
+    </div>
+    <div class="card">
+      <p>Total Expenses</p>
+      <p id="expenses" class="value">$0</p>
+    </div>
+  </div>
+
+  <!-- Add Income -->
+  <div class="panel">
+    <h3>Add Income</h3>
+    <div class="form-grid">
+      <input id="incomeAmount" type="number" placeholder="Amount">
+      <input id="incomeSource" type="text" placeholder="Source">
+      <button onclick="addIncome()">Add Income</button>
+    </div>
+
+    <table>
+      <thead><tr><th>Amount</th><th>Source</th></tr></thead>
+      <tbody id="incomeList"></tbody>
+    </table>
+  </div>
+
+  <!-- Add Expense -->
+  <div class="panel">
+    <h3>Add Expense</h3>
+    <div class="form-grid">
+      <input id="expenseAmount" type="number" placeholder="Amount">
+      <input id="expenseCategory" type="text" placeholder="Category">
+      <button onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <table>
+      <thead><tr><th>Amount</th><th>Category</th></tr></thead>
+      <tbody id="expenseList"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+let income = JSON.parse(localStorage.getItem("income")) || [];
+let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+function saveData(){
+  localStorage.setItem("income", JSON.stringify(income));
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+}
+
+function updateTotals(){
+  const totalIncome = income.reduce((a,b)=>a+b.amount,0);
+  const totalExpenses = expenses.reduce((a,b)=>a+b.amount,0);
+  document.getElementById("income").innerText = "$" + totalIncome;
+  document.getElementById("expenses").innerText = "$" + totalExpenses;
+  document.getElementById("balance").innerText = "$" + (totalIncome-totalExpenses);
+}
+
+function renderLists(){
+  const incomeList=document.getElementById("incomeList");
+  const expenseList=document.getElementById("expenseList");
+  incomeList.innerHTML="";
+  expenseList.innerHTML="";
+
+  income.forEach(i=>{
+    incomeList.innerHTML += `<tr><td>$${i.amount}</td><td>${i.source}</td></tr>`;
+  });
+
+  expenses.forEach(e=>{
+    expenseList.innerHTML += `<tr><td>$${e.amount}</td><td>${e.category}</td></tr>`;
+  });
+}
+
+function addIncome(){
+  const amount = Number(document.getElementById("incomeAmount").value);
+  const source = document.getElementById("incomeSource").value;
+  if(!amount || !source) return alert("Enter amount & source");
+  income.push({amount,source});
+  saveData(); renderLists(); updateTotals();
+}
+
+function addExpense(){
+  const amount = Number(document.getElementById("expenseAmount").value);
+  const category = document.getElementById("expenseCategory").value;
+  if(!amount || !category) return alert("Enter amount & category");
+  expenses.push({amount,category});
+  saveData(); renderLists(); updateTotals();
+}
+
+renderLists();
+updateTotals();
+</script>
+
+</body>
+</html>
